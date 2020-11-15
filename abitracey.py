@@ -193,16 +193,17 @@ def game_loop():
                 quit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_A or event.key == pygame.K_LEFT:
+                if event.key == pygame.K_LEFT:
                     x_change = -5
                     
-                if event.key == pygame.K_D or event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_RIGHT:
                     x_change = 5
+                    
                 if event.key == pygame.K_ESCAPE:
                     game_intro()
 
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_A or event.key == pygame.K_D:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     x_change = 0
 
         x += x_change
