@@ -22,6 +22,7 @@ dark_red = (155,0,0)
 green = (0,255,0)
 dark_green = (0,155,0)
 blue = (0,0,255)
+dark_blue = (0,0,155)
 
 # the size of the car
 car_width = 75
@@ -31,14 +32,8 @@ gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("A bit Racey")
 clock = pygame.time.Clock()
 
-# load sounds
-crash_sound = pygame.mixer.Sound("crash.wav")
-
 # load the car img
 carImg = pygame.image.load("car.png")
-video = pygame.movie.Movie("video.mp4")
-video.set_display(gameDisplay)
-
 
 # functions 
 def things_dodged(count):
@@ -75,7 +70,7 @@ def message_display(text, x, y, wait, game, color, size):
 
     pygame.display.update()
     if wait:
-        time.sleep(4)
+        time.sleep(2)
     if game:
         game_loop()
 
@@ -113,9 +108,64 @@ def game_intro():
         else:
             pygame.draw.rect(gameDisplay, dark_red, (550,450,100,50))
         message_display("Quit", 595, 475, False, False, black, 30)
+        if 350 + 100 > mouse[0] > 350 and 450 + 50 > mouse[1] > 450:
+            pygame.draw.rect(gameDisplay, blue, (350,450,100,50))
+            if click[0] == 1:
+                controls_menu()
+                intro = False
+        else:
+            pygame.draw.rect(gameDisplay, dark_blue, (350,450,100,50))
+        message_display("Controls", 397, 475, False, False, black, 20)
 
         pygame.display.update()
         clock.tick(60)
+# the controls menu
+def controls_menu():
+    controls = True
+    gameDisplay.fill(white)
+    while controls:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                controls = False
+                pygame.quit()
+                quit()
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if 150 + 100 > mouse[0] > 150 and 525 + 50 > mouse[1] > 525:
+            pygame.draw.rect(gameDisplay, red, (150,525,100,50))
+            if click[0] == 1:
+                game_intro()
+        else:
+            pygame.draw.rect(gameDisplay, dark_red, (150,525,100,50))
+        message_display("Back", 195, 550, False, False, black, 30)
+
+        largeText = pygame.font.Font("freesansbold.ttf", 115)
+        TextSurf, TextRect = text_objects("Controls", largeText, black)
+        TextRect.center = (400, 100)
+        gameDisplay.blit(TextSurf, TextRect)
+
+        controlsText1 = pygame.font.Font("freesansbold.ttf", 50)
+        TextSurf1, TextRect1 = text_objects("A/RIGHT = move right", controlsText1, black)
+        TextRect1.center = (400, 190)
+        gameDisplay.blit(TextSurf1, TextRect1)
+
+        controlsText2 = pygame.font.Font("freesansbold.ttf", 50)
+        TextSurf2, TextRect2 = text_objects("D/LEFT = move left", controlsText2, black)
+        TextRect2.center = (400, 265)
+        gameDisplay.blit(TextSurf2, TextRect2)
+
+
+        controlsText3 = pygame.font.Font("freesansbold.ttf", 50)
+        TextSurf3, TextRect3 = text_objects("ESC = exit", controlsText3, black)
+        TextRect3.center = (400, 340)
+        gameDisplay.blit(TextSurf3, TextRect3)
+
+        
+
+        pygame.display.update()
+        clock.tick(60)
+        
+    
 
 # the main gameloop      
 def game_loop():
@@ -134,34 +184,31 @@ def game_loop():
     highscore = open("highscore", "r")
     game = json.load(highscore)
     highscore.close()
-    .play()
-
 
     while not gameExit:
-        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                gameExit = True
                 pygame.quit()
                 quit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
+                if event.key == pygame.K_A or event.key == pygame.K_LEFT:
                     x_change = -5
                     
-                if event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_D or event.key == pygame.K_RIGHT:
                     x_change = 5
                 if event.key == pygame.K_ESCAPE:
                     game_intro()
 
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_A or event.key == pygame.K_D:
                     x_change = 0
 
         x += x_change
         
         gameDisplay.fill(white)
-
-
+        
         things(thing_startx, thing_starty, thing_width, thing_height, blue)
         thing_starty += thing_speed
         car(x,y)
@@ -176,6 +223,7 @@ def game_loop():
                 savescore = json.dumps(game)
                 highscore.write(savescore)
                 highscore.close()
+                message_display("New Highscore!", 400, 150, True, False, black, 40)
             crash()
         if thing_starty > display_height:
             thing_starty = 0 - thing_height
