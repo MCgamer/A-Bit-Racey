@@ -1,6 +1,7 @@
 # A Bit Racey
 # Game By Micah Perteet
-# (C) 2020
+# Credit to sentdex: https://www.youtube.com/watch?v=ujOTNg17LjI&list=PLQVvvaa0QuDdLkP8MrOXLe_rKuf6r80KO
+
 # imports
 import json
 import random
@@ -23,6 +24,8 @@ green = (0,255,0)
 dark_green = (0,155,0)
 blue = (0,0,255)
 dark_blue = (0,0,155)
+yellow = (249,255,66)
+dark_yellow = (124.5,122.5,33)
 
 # the size of the car
 car_width = 75
@@ -32,11 +35,9 @@ gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("A bit Racey")
 clock = pygame.time.Clock()
 
-# load the car img
+# load the images
 carImg = pygame.image.load("car.png")
-
-# stating the current level
-level = 1
+coinImg = pygame.image.load("coin.png")
 
 # functions 
 def things_dodged(count):
@@ -75,11 +76,10 @@ def message_display(text, x, y, wait, game, color, size):
     if wait:
         time.sleep(2)
     if game:
-        level2()
+        game_loop()
 
 # the game intro
 def game_intro():
-
     intro = True
     gameDisplay.fill(white)
     while intro:
@@ -95,13 +95,16 @@ def game_intro():
 
         mouse = pygame.mouse.get_pos()
         click = pygame.mouse.get_pressed()
+
         if 150 + 100 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(gameDisplay, green, (150,450,100,50))
             if click[0] == 1:
-                level2()
+                intro = False
+                game_loop()
         else:
             pygame.draw.rect(gameDisplay, dark_green, (150,450,100,50))
         message_display("Start", 195, 475, False, False, black, 30)
+
         if 550 + 100 > mouse[0] > 550 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(gameDisplay, red, (550,450,100,50))
             if click[0] == 1:
@@ -111,17 +114,28 @@ def game_intro():
         else:
             pygame.draw.rect(gameDisplay, dark_red, (550,450,100,50))
         message_display("Quit", 595, 475, False, False, black, 30)
+
         if 350 + 100 > mouse[0] > 350 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(gameDisplay, blue, (350,450,100,50))
             if click[0] == 1:
-                controls_menu()
                 intro = False
+                controls_menu()
         else:
             pygame.draw.rect(gameDisplay, dark_blue, (350,450,100,50))
         message_display("Controls", 397, 475, False, False, black, 20)
 
+        if 350 + 100 > mouse[0] > 350 and 390 + 50 > mouse[1] > 390:
+            pygame.draw.rect(gameDisplay, yellow, (350,390,100,50))
+            if click[0] == 1:
+                intro = False
+                shop()
+        else:
+            pygame.draw.rect(gameDisplay, dark_yellow, (350,390,100,50))
+        message_display("Shop", 397, 415, False, False, black, 20)
+
         pygame.display.update()
         clock.tick(60)
+        
 # the controls menu
 def controls_menu():
     controls = True
@@ -148,12 +162,12 @@ def controls_menu():
         gameDisplay.blit(TextSurf, TextRect)
 
         controlsText1 = pygame.font.Font("freesansbold.ttf", 50)
-        TextSurf1, TextRect1 = text_objects("A/RIGHT = move right", controlsText1, black)
+        TextSurf1, TextRect1 = text_objects("RIGHT = move right", controlsText1, black)
         TextRect1.center = (400, 190)
         gameDisplay.blit(TextSurf1, TextRect1)
 
         controlsText2 = pygame.font.Font("freesansbold.ttf", 50)
-        TextSurf2, TextRect2 = text_objects("D/LEFT = move left", controlsText2, black)
+        TextSurf2, TextRect2 = text_objects("LEFT = move left", controlsText2, black)
         TextRect2.center = (400, 265)
         gameDisplay.blit(TextSurf2, TextRect2)
 
@@ -165,7 +179,39 @@ def controls_menu():
 
         pygame.display.update()
         clock.tick(60)
-    
+
+# the shop function
+def shop():
+    shop = True
+    gameDisplay.fill(white)
+    gamestats = open("gamestats", "r")
+    game = json.load(gamestats)
+    coins = game["coins"]
+    gamestats.close()
+    message_display("Coins: " + str(coins), 150, 50, False, False, black, 30)
+    gameDisplay.blit(coinImg,(12,20))
+    while shop:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                shop = False
+                pygame.quit()
+                quit()
+
+        largeText = pygame.font.Font("freesansbold.ttf", 115)
+        TextSurf, TextRect = text_objects("Shop", largeText, blue)
+        TextRect.center = (400, 100)
+        gameDisplay.blit(TextSurf, TextRect)
+        
+        mouse = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed()
+        if 100 + 100 > mouse[0] > 100 and 525 + 50 > mouse[1] > 525:
+            pygame.draw.rect(gameDisplay, red, (100,525,100,50))
+            if click[0] == 1:
+                game_intro()
+        else:
+            pygame.draw.rect(gameDisplay, dark_red, (100,525,100,50))
+        message_display("Back", 145, 550, False, False, black, 30)
+        
 # the main game loop
 def game_loop():
     x = (display_width * 0.45)
@@ -180,45 +226,11 @@ def game_loop():
     thing_width = 100
     thing_height = 100
     gameExit = False
-    # highscore = open("highscore", "r")
-    # game = json.load(highscore)
-    # highscore.close()
-
-    largeText = pygame.font.Font("freesansbold.ttf", 115)
-    TextSurf, TextRect = text_objects("A Bit Racey", largeText, blue)
-    TextRect.center = (400, 100)
-    gameDisplay.blit(TextSurf, TextRect)
-
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    if 150 + 100 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
-        pygame.draw.rect(gameDisplay, green, (150,450,100,50))
-        if click[0] == 1:
-            level2()
-    else:
-        pygame.draw.rect(gameDisplay, dark_green, (150,450,100,50))
-    message_display("Start", 195, 475, False, False, black, 30)
-    if 550 + 100 > mouse[0] > 550 and 450 + 50 > mouse[1] > 450:
-        pygame.draw.rect(gameDisplay, red, (550,450,100,50))
-        if click[0] == 1:
-            intro = False
-            pygame.quit()
-            quit()
-    else:
-        pygame.draw.rect(gameDisplay, dark_red, (550,450,100,50))
-    message_display("Quit", 595, 475, False, False, black, 30)
-    if 350 + 100 > mouse[0] > 350 and 450 + 50 > mouse[1] > 450:
-        pygame.draw.rect(gameDisplay, blue, (350,450,100,50))
-        if click[0] == 1:
-            controls_menu()
-            intro = False
-    else:
-        pygame.draw.rect(gameDisplay, dark_blue, (350,450,100,50))
-    message_display("Controls", 397, 475, False, False, black, 20)
-
-    pygame.display.update()
-    clock.tick(60)
-# the controls menu
+    gamestats = open("gamestats", "r")
+    game = json.load(gamestats)
+    coins = game["coins"]
+    gamestats.close()
+        
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -248,35 +260,41 @@ def game_loop():
         thing_starty += thing_speed
         car(x,y)
         font = pygame.font.SysFont(None, 25)
-        text = font.render("Level 1, " + "Dodged: " + str(score), True, black)
+        text = font.render("Dodged: " + str(score) + ", " + "Highscore: " + str(game["highscore"]) + ", " + "Coins: " + str(coins), True, black)
         gameDisplay.blit(text, (0,0))
 
         if x > display_width - car_width or x < 0:
-            # if score > game["highscore"]:
-            #     highscore = open("highscore", "w")
-            #     game["highscore"] = score
-            #     savescore = json.dumps(game)
-            #     highscore.write(savescore)
-            #     highscore.close()
-            #     message_display("New Highscore!", 400, 150, True, False, black, 40)
+            if score > game["highscore"]:
+                gamestats = open("gamestats", "w")
+                game["highscore"] = score
+                savescore = json.dumps(game)
+                gamestats.write(savescore)
+                gamestats.close()
+                message_display("New Highscore!", 400, 150, True, False, black, 40)
             crash()
         if thing_starty > display_height:
             thing_starty = 0 - thing_height
             thing_startx = random.randrange(0,display_width - thing_width)
             score += 1
+            gamestats = open("gamestats", "w")
+            game["coins"] += 1
+            savescore = json.dumps(game)
+            gamestats.write(savescore)
+            gamestats.close()
+            coins += 1
             thing_width += 8
             thing_speed += 0.8
             
-
+        # confuzzeling block-hit detection
         if y < thing_starty + thing_height:
-            if x > thing_startx and x < thing_startx + thing_width or x + car_width > thing_startx and x + car_width < thing_startx + thing_width:  
-                # if score > game["highscore"]:
-                #     highscore = open("highscore", "w")
-                #     game["highscore"] = score
-                #     savescore = json.dumps(game)
-                #     highscore.write(savescore)
-                #     highscore.close()
-                #     message_display("New Highscore!", 400, 150, True, False, black, 40)
+            if x > thing_startx and x < thing_startx + thing_width or x + car_width > thing_startx and x + car_width < thing_startx + thing_width:
+                if score > game["highscore"]:
+                    gamestats = open("gamestats", "w")
+                    game["highscore"] = score
+                    savescore = json.dumps(game)
+                    gamestats.write(savescore)
+                    gamestats.close()
+                    message_display("New Highscore!", 400, 150, True, False, black, 40)
                 crash()
         pygame.display.update()
         clock.tick(60)
