@@ -35,6 +35,9 @@ clock = pygame.time.Clock()
 # load the car img
 carImg = pygame.image.load("car.png")
 
+# stating the current level
+level = 1
+
 # functions 
 def things_dodged(count):
     font = pygame.font.SysFont(None, 25)
@@ -46,6 +49,7 @@ def things(thingx, thingy, thingw, thingh, color):
     
 def car(x,y):
     gameDisplay.blit(carImg,(x,y))
+
 def button(text, textx, texty, textcolor, textsize, butnx, butny, butninactinvecolor, butnactivecolor, butnw, butnh):
     mouse = pygame.mouse.get_pos()
     if butnx + butnw > mouse[0] > butnx and butny + butnh > mouse[1] > butny:
@@ -60,7 +64,6 @@ def text_objects(text, font, color):
 
 def crash():
     message_display("You Crashed", 400, 300, True, True, red, 115)
-    pygame.mixer.Sound.play(crash_sound)
 
 def message_display(text, x, y, wait, game, color, size):
     largeText = pygame.font.Font("freesansbold.ttf", size)
@@ -72,7 +75,7 @@ def message_display(text, x, y, wait, game, color, size):
     if wait:
         time.sleep(2)
     if game:
-        game_loop()
+        level2()
 
 # the game intro
 def game_intro():
@@ -95,7 +98,7 @@ def game_intro():
         if 150 + 100 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
             pygame.draw.rect(gameDisplay, green, (150,450,100,50))
             if click[0] == 1:
-                game_loop()
+                level2()
         else:
             pygame.draw.rect(gameDisplay, dark_green, (150,450,100,50))
         message_display("Start", 195, 475, False, False, black, 30)
@@ -160,14 +163,10 @@ def controls_menu():
         TextRect3.center = (400, 340)
         gameDisplay.blit(TextSurf3, TextRect3)
 
-        
-
         pygame.display.update()
         clock.tick(60)
-        
     
-
-# the main gameloop      
+# the main game loop
 def game_loop():
     x = (display_width * 0.45)
     y = (display_height * 0.8)
@@ -181,10 +180,45 @@ def game_loop():
     thing_width = 100
     thing_height = 100
     gameExit = False
-    highscore = open("highscore", "r")
-    game = json.load(highscore)
-    highscore.close()
+    # highscore = open("highscore", "r")
+    # game = json.load(highscore)
+    # highscore.close()
 
+    largeText = pygame.font.Font("freesansbold.ttf", 115)
+    TextSurf, TextRect = text_objects("A Bit Racey", largeText, blue)
+    TextRect.center = (400, 100)
+    gameDisplay.blit(TextSurf, TextRect)
+
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if 150 + 100 > mouse[0] > 150 and 450 + 50 > mouse[1] > 450:
+        pygame.draw.rect(gameDisplay, green, (150,450,100,50))
+        if click[0] == 1:
+            level2()
+    else:
+        pygame.draw.rect(gameDisplay, dark_green, (150,450,100,50))
+    message_display("Start", 195, 475, False, False, black, 30)
+    if 550 + 100 > mouse[0] > 550 and 450 + 50 > mouse[1] > 450:
+        pygame.draw.rect(gameDisplay, red, (550,450,100,50))
+        if click[0] == 1:
+            intro = False
+            pygame.quit()
+            quit()
+    else:
+        pygame.draw.rect(gameDisplay, dark_red, (550,450,100,50))
+    message_display("Quit", 595, 475, False, False, black, 30)
+    if 350 + 100 > mouse[0] > 350 and 450 + 50 > mouse[1] > 450:
+        pygame.draw.rect(gameDisplay, blue, (350,450,100,50))
+        if click[0] == 1:
+            controls_menu()
+            intro = False
+    else:
+        pygame.draw.rect(gameDisplay, dark_blue, (350,450,100,50))
+    message_display("Controls", 397, 475, False, False, black, 20)
+
+    pygame.display.update()
+    clock.tick(60)
+# the controls menu
     while not gameExit:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -214,17 +248,17 @@ def game_loop():
         thing_starty += thing_speed
         car(x,y)
         font = pygame.font.SysFont(None, 25)
-        text = font.render("Dodged: " + str(score) + ", " + "Highscore: " + str(game["highscore"]), True, black)
+        text = font.render("Level 1, " + "Dodged: " + str(score), True, black)
         gameDisplay.blit(text, (0,0))
 
         if x > display_width - car_width or x < 0:
-            if score > game["highscore"]:
-                highscore = open("highscore", "w")
-                game["highscore"] = score
-                savescore = json.dumps(game)
-                highscore.write(savescore)
-                highscore.close()
-                message_display("New Highscore!", 400, 150, True, False, black, 40)
+            # if score > game["highscore"]:
+            #     highscore = open("highscore", "w")
+            #     game["highscore"] = score
+            #     savescore = json.dumps(game)
+            #     highscore.write(savescore)
+            #     highscore.close()
+            #     message_display("New Highscore!", 400, 150, True, False, black, 40)
             crash()
         if thing_starty > display_height:
             thing_starty = 0 - thing_height
@@ -236,13 +270,13 @@ def game_loop():
 
         if y < thing_starty + thing_height:
             if x > thing_startx and x < thing_startx + thing_width or x + car_width > thing_startx and x + car_width < thing_startx + thing_width:  
-                if score > game["highscore"]:
-                    highscore = open("highscore", "w")
-                    game["highscore"] = score
-                    savescore = json.dumps(game)
-                    highscore.write(savescore)
-                    highscore.close()
-                    message_display("New Highscore!", 400, 150, True, False, black, 40)
+                # if score > game["highscore"]:
+                #     highscore = open("highscore", "w")
+                #     game["highscore"] = score
+                #     savescore = json.dumps(game)
+                #     highscore.write(savescore)
+                #     highscore.close()
+                #     message_display("New Highscore!", 400, 150, True, False, black, 40)
                 crash()
         pygame.display.update()
         clock.tick(60)
